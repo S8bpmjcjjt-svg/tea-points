@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>龙江茶协 · 会员信息与积分登记</title>
+<meta name="theme-color" content="#8C1F28">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="会员积分登记">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<style>
+:root{
+  --red:#8C1F28; --red-dark:#6E1520; --ink:#33302A; --grey:#7A7468;
+  --cream:#FAF7F1; --card:#FFFFFF; --line:#EFE6DC; --green:#5E7F6B;
+  --gold:#B98A3E; --soft:#F9EFEA;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:var(--cream);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  font-size:15px;line-height:1.6;padding-bottom:calc(72px + env(safe-area-inset-bottom));}
+.serif{font-family:"Songti SC","STSong",serif}
+#app{max-width:640px;margin:0 auto;min-height:100vh}
+
+/* ---------- header ---------- */
+header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);
+  color:#fff;padding:22px 20px 18px;border-radius:0 0 22px 22px;}
+header h1{font-size:20px;font-weight:700;letter-spacing:1px}
+header .sub{font-size:12px;opacity:.85;margin-top:2px}
+.stats{display:flex;gap:10px;margin-top:14px}
+.stat{flex:1;background:rgba(255,255,255,.14);border-radius:12px;padding:8px 12px}
+.stat b{display:block;font-size:20px;line-height:1.2}
+.stat span{font-size:11px;opacity:.85}
+
+/* ---------- tabs ---------- */
+nav{position:fixed;bottom:0;left:0;right:0;z-index:50;
+  background:#fff;border-top:1px solid var(--line);
+  padding-bottom:env(safe-area-inset-bottom);display:flex}
+nav button{flex:1;background:none;border:none;padding:8px 0 6px;
+  font-size:11px;color:var(--grey);display:flex;flex-direction:column;align-items:center;gap:2px}
+nav button .ic{font-size:20px;line-height:1}
+nav button.on{color:var(--red);font-weight:700}
+.page{display:none;padding:14px 14px 8px}
+.page.on{display:block}
+
+/* ---------- common ---------- */
+.card{background:var(--card);border-radius:14px;padding:14px;
+  box-shadow:0 1px 4px rgba(51,48,42,.06);margin-bottom:12px}
+.sec-title{font-size:15px;font-weight:700;color:var(--ink);margin:4px 2px 10px;display:flex;align-items:center;gap:8px}
+.sec-title::before{content:"";width:4px;height:16px;background:var(--red);border-radius:2px}
+.chip{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;background:var(--soft);color:var(--red);margin-right:6px}
+.chip.g{background:#EEF3EF;color:var(--green)}
+.chip.gold{background:#F7EEDD;color:var(--gold)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  background:var(--red);color:#fff;border:none;border-radius:12px;
+  padding:12px 18px;font-size:15px;font-weight:600;width:100%}
+.btn:active{opacity:.85}
+.btn.ghost{background:#fff;color:var(--red);border:1.5px solid var(--red)}
+.btn.mini{width:auto;padding:6px 12px;font-size:12px;border-radius:9px;font-weight:500}
+.btn.grey{background:#EFEAE2;color:var(--ink)}
+input,select,textarea{width:100%;border:1.5px solid var(--line);border-radius:10px;
+  padding:11px 12px;font-size:15px;background:#fff;color:var(--ink);outline:none;font-family:inherit;
+  -webkit-appearance:none;appearance:none}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237A7468' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:30px}
+input:focus,select:focus,textarea:focus{border-color:var(--red)}
+label{display:block;font-size:12px;color:var(--grey);margin:10px 0 5px}
+.row2{display:flex;gap:10px}.row2>*{flex:1}
+.empty{text-align:center;color:var(--grey);font-size:13px;padding:28px 0}
+
+/* search + filter */
+.searchbar{display:flex;gap:8px;margin-bottom:10px}
+.filters{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:6px}
+.filters::-webkit-scrollbar{display:none}
+.fbtn{flex-shrink:0;font-size:12px;padding:5px 12px;border-radius:999px;
+  background:#fff;border:1px solid var(--line);color:var(--grey)}
+.fbtn.on{background:var(--red);border-color:var(--red);color:#fff}
+
+/* member card */
+.mcard{background:#fff;border-radius:14px;padding:13px 14px;margin-bottom:10px;
+  box-shadow:0 1px 4px rgba(51,48,42,.06);display:flex;align-items:center;gap:12px}
+.avatar{width:44px;height:44px;border-radius:50%;background:var(--soft);color:var(--red);
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;
+  font-family:"Songti SC",serif;flex-shrink:0;border:1.5px solid #EBD8D2}
+.mmain{flex:1;min-width:0}
+.mname{font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mmeta{font-size:12px;color:var(--grey);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mright{text-align:right;flex-shrink:0}
+.pts{font-weight:700;color:var(--red);font-size:17px}
+.pts small{font-size:10px;color:var(--grey);font-weight:400}
+.star-tag{font-size:11px;color:var(--gold)}
+
+/* ledger row */
+.lrow{display:flex;align-items:center;gap:10px;padding:11px 2px;border-bottom:1px solid var(--line)}
+.lrow:last-child{border-bottom:none}
+.ldate{font-size:11px;color:var(--grey);width:64px;flex-shrink:0}
+.lmain{flex:1;min-width:0}
+.lbeh{font-size:14px;font-weight:600}
+.lwho{font-size:12px;color:var(--grey)}
+.lval{font-weight:700;color:var(--green);flex-shrink:0}
+.lval.neg{color:var(--red)}
+.del-x{color:#C9BDB4;font-size:16px;padding:2px 6px;flex-shrink:0}
+
+/* rule list */
+.rule{display:flex;align-items:center;gap:12px;padding:11px 2px;border-bottom:1px dashed var(--line)}
+.rule:last-child{border:none}
+.rval{font-weight:700;color:var(--red);flex-shrink:0;font-size:14px;min-width:72px;text-align:right}
+.rname{flex:1;font-size:14px}
+.rdesc{font-size:11px;color:var(--grey)}
+
+/* star thresholds */
+.starrow{display:flex;align-items:center;gap:12px;padding:10px 2px;border-bottom:1px dashed var(--line)}
+.starrow:last-child{border:none}
+.stars-ic{font-size:16px;letter-spacing:2px;color:var(--gold);flex-shrink:0;width:86px}
+.sreq{flex:1;font-size:12px;color:var(--grey)}
+
+/* modal */
+.mask{position:fixed;inset:0;background:rgba(30,20,15,.45);z-index:90;display:none;align-items:flex-end;justify-content:center}
+.mask.on{display:flex}
+.sheet{background:var(--cream);width:100%;max-width:640px;max-height:88vh;overflow-y:auto;
+  border-radius:20px 20px 0 0;padding:18px 16px calc(20px + env(safe-area-inset-bottom))}
+.sheet h3{font-size:17px;text-align:center;margin-bottom:4px;font-weight:700}
+.sheet .close{position:absolute;right:16px;top:14px;font-size:20px;color:var(--grey);background:none;border:none}
+.sheet-head{position:relative}
+
+/* detail */
+.dl{display:grid;grid-template-columns:88px 1fr;gap:6px 10px;font-size:13px;margin:10px 0}
+.dl dt{color:var(--grey)}
+.dl dd{word-break:break-all}
+.progress{height:8px;background:var(--soft);border-radius:99px;overflow:hidden;margin:8px 0 4px}
+.progress i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--red));border-radius:99px;transition:width .4s}
+.prog-note{font-size:11px;color:var(--grey)}
+
+/* toast */
+#toast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%);z-index:200;
+  background:rgba(51,48,42,.92);color:#fff;font-size:13px;padding:9px 18px;border-radius:99px;
+  opacity:0;pointer-events:none;transition:opacity .25s;white-space:nowrap}
+#toast.on{opacity:1}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1 class="serif">会员信息与积分登记</h1>
+    <div class="sub">黑龙江省茶业协会 · 秘书处</div>
+    <div class="stats">
+      <div class="stat"><b id="stMembers">0</b><span>会员总数</span></div>
+      <div class="stat"><b id="stPoints">0</b><span>累计积分笔数</span></div>
+      <div class="stat"><b id="stPaid">0</b><span>本年度已缴</span></div>
+    </div>
+  </header>
+
+  <!-- ============ 会员 ============ -->
+  <section class="page on" id="pgMembers">
+    <div class="searchbar">
+      <input id="q" placeholder="搜索姓名 / 单位 / 编号">
+    </div>
+    <div class="filters" id="catFilters"></div>
+    <div id="memberList"></div>
+    <div style="margin-top:6px"><button class="btn" onclick="openMemberForm()">＋ 登记新会员</button></div>
+  </section>
+
+  <!-- ============ 记一笔积分 ============ -->
+  <section class="page" id="pgAdd">
+    <div class="card">
+      <div class="sec-title">记一笔积分</div>
+      <label>选择会员 *</label>
+      <select id="fMember"></select>
+      <label>积分行为 *</label>
+      <select id="fBeh" onchange="onBehChange()"></select>
+      <div class="row2">
+        <div><label>日期 *</label><input type="date" id="fDate"></div>
+        <div><label>积分值 *</label><input type="number" id="fVal" value="0"></div>
+      </div>
+      <div class="row2">
+        <div><label>经办人</label><input id="fOp" placeholder="如：沙琳"></div>
+        <div><label>凭证编号</label><input id="fVou" placeholder="如 QD-2027-001"></div>
+      </div>
+      <label>备注</label>
+      <input id="fNote" placeholder="如：春茶品鉴会">
+      <div style="margin-top:14px"><button class="btn" onclick="savePoint()">保存积分</button></div>
+      <div id="behHint" style="font-size:11px;color:var(--grey);margin-top:8px"></div>
+    </div>
+    <div class="card">
+      <div class="sec-title">最近登记</div>
+      <div id="recentList"></div>
+    </div>
+  </section>
+
+  <!-- ============ 台账 ============ -->
+  <section class="page" id="pgLedger">
+    <div class="card">
+      <div class="sec-title">积分台账</div>
+      <div class="searchbar"><input id="qLedger" placeholder="搜索会员 / 行为 / 凭证"></div>
+      <div id="ledgerList"></div>
+    </div>
+  </section>
+
+  <!-- ============ 规则 ============ -->
+  <section class="page" id="pgRules">
+    <div class="card">
+      <div class="sec-title">积分获取规则</div>
+      <div id="ruleList"></div>
+      <div style="font-size:11px;color:var(--grey);margin-top:8px">
+        参加活动、公众号投稿年度分别封顶 100 分；连续续费加成 +10%/年，封顶 +50%；积分入账一般为事项发生后 5 个工作日内。
+      </div>
+    </div>
+    <div class="card">
+      <div class="sec-title">星级晋级门槛</div>
+      <div id="starList"></div>
+      <div style="font-size:11px;color:var(--grey);margin-top:8px">
+        双门槛（累计积分 + 会龄）缺一不可；星级只升不降，按月核定、达标次月升级。
+      </div>
+    </div>
+    <div class="card">
+      <div class="sec-title">会费标准（2026—2028 届）</div>
+      <div id="feeList"></div>
+    </div>
+  </section>
+
+  <!-- ============ 数据 ============ -->
+  <section class="page" id="pgData">
+    <div class="card">
+      <div class="sec-title">备份与导出</div>
+      <p style="font-size:12px;color:var(--grey);margin-bottom:10px">
+        数据保存在本机浏览器中。换手机或发给秘书处汇总时，请先导出备份文件。</p>
+      <button class="btn ghost" style="margin-bottom:10px" onclick="exportJSON()">⬇ 导出完整备份（JSON）</button>
+      <div class="row2" style="margin-bottom:10px">
+        <button class="btn grey" onclick="exportCSV('members')">导出会员 CSV</button>
+        <button class="btn grey" onclick="exportCSV('points')">导出积分 CSV</button>
+      </div>
+      <p style="font-size:12px;color:var(--grey)">CSV 可直接用电脑 Excel / WPS 打开（已带 BOM，中文不乱码）。</p>
+    </div>
+    <div class="card">
+      <div class="sec-title">导入恢复</div>
+      <input type="file" id="impFile" accept=".json" style="padding:8px;font-size:13px">
+      <div style="margin-top:10px"><button class="btn ghost" onclick="importJSON()">导入备份（覆盖当前数据）</button></div>
+    </div>
+    <div class="card">
+      <div class="sec-title">示例数据</div>
+      <p style="font-size:12px;color:var(--grey);margin-bottom:10px">首次使用时自动载入了 3 条示例会员与 4 笔示例积分，正式使用前可一键清除。</p>
+      <button class="btn grey" onclick="clearSample()">清除示例数据</button>
+      <div style="height:10px"></div>
+      <button class="btn ghost" onclick="wipeAll()">清空全部数据（慎用）</button>
+    </div>
+  </section>
+
+  <nav>
+    <button class="on" data-pg="pgMembers" onclick="go('pgMembers',this)"><span class="ic">🍵</span>会员</button>
+    <button data-pg="pgAdd" onclick="go('pgAdd',this)"><span class="ic">✏️</span>记积分</button>
+    <button data-pg="pgLedger" onclick="go('pgLedger',this)"><span class="ic">📒</span>台账</button>
+    <button data-pg="pgRules" onclick="go('pgRules',this)"><span class="ic">⭐</span>规则</button>
+    <button data-pg="pgData" onclick="go('pgData',this)"><span class="ic">☁️</span>数据</button>
+  </nav>
+</div>
+
+<!-- 新会员 / 编辑 -->
+<div class="mask" id="mkMember">
+  <div class="sheet sheet-head">
+    <button class="close" onclick="hide('mkMember')">✕</button>
+    <h3 id="mfTitle">登记新会员</h3>
+    <label>姓名 / 单位名称 *</label><input id="mName">
+    <label>会员类别 *</label>
+    <select id="mCat" onchange="onCatChange()">
+      <option>普通个人会员</option><option>普通单位会员</option>
+      <option>理事单位</option><option>常务理事单位</option><option>副会长单位</option>
+      <option>荣誉会员</option>
+    </select>
+    <label>会员编号（留空自动生成）</label><input id="mNo" placeholder="GR-0002 / DW-0019">
+    <label>统一社会信用代码 / 身份证号</label><input id="mCert">
+    <div class="row2">
+      <div><label>联系人 / 姓名</label><input id="mContact"></div>
+      <div><label>职务</label><input id="mRole"></div>
+    </div>
+    <label>联系电话</label><input id="mPhone" type="tel">
+    <label>电子邮箱</label><input id="mEmail" type="email">
+    <label>通讯地址</label><input id="mAddr">
+    <div class="row2">
+      <div><label>入会日期 *</label><input type="date" id="mJoin"></div>
+      <div><label>会籍年度</label><input id="mYear" value="2027"></div>
+    </div>
+    <div class="row2">
+      <div><label>会费标准（元/年）</label><input type="number" id="mFee"></div>
+      <div><label>缴费状态</label>
+        <select id="mPay"><option>未缴</option><option>已缴</option><option>免缴（荣誉会员）</option></select>
+      </div>
+    </div>
+    <label>推荐人</label><input id="mRef">
+    <label>备注</label><input id="mNote">
+    <div style="margin-top:16px"><button class="btn" onclick="saveMember()">保存</button></div>
+  </div>
+</div>
+
+<!-- 会员详情 -->
+<div class="mask" id="mkDetail">
+  <div class="sheet sheet-head">
+    <button class="close" onclick="hide('mkDetail')">✕</button>
+    <h3 id="dTitle"></h3>
+    <div style="text-align:center" id="dStars"></div>
+    <div class="card" style="margin-top:10px">
+      <div class="progress"><i id="dProg"></i></div>
+      <div class="prog-note" id="dProgNote"></div>
+    </div>
+    <dl class="dl" id="dInfo"></dl>
+    <div class="sec-title">积分记录</div>
+    <div class="card" id="dLedger" style="max-height:240px;overflow-y:auto"></div>
+    <div class="row2">
+      <button class="btn ghost" onclick="editMember()">编辑资料</button>
+      <button class="btn ghost" onclick="delMember()">删除会员</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ================= 口径常量（与协会制度一致） ================= */
+const CATS = ["副会长单位","常务理事单位","理事单位","普通单位会员","普通个人会员","荣誉会员"];
+const FEE  = {"副会长单位":6000,"常务理事单位":3000,"理事单位":2000,"普通单位会员":1000,"普通个人会员":300,"荣誉会员":0};
+const OFFICE_SCORE = {"副会长单位":400,"常务理事单位":300,"理事单位":200};  // 任职分
+const RULES = [
+  {b:"缴纳年度会费", v:"300 分/年", d:"荣誉会员视同已缴"},
+  {b:"参加协会活动", v:"10 分/场", d:"年度封顶 100 分"},
+  {b:"考取茶艺师/评茶员证书", v:"+100 分/证", d:"逐级累加，以证书为准"},
+  {b:"志愿服务（茶博会、年会等）", v:"20 分/次", d:"秘书处认定"},
+  {b:"推荐新会员入会", v:"30 分/人", d:"入会成功后计入推荐人"},
+  {b:"公众号投稿/内容采用", v:"20 分/篇", d:"年度封顶 100 分"},
+  {b:"担任理事/常务理事/副会长", v:"200/300/400 分/年", d:"按单位档位计入个人台账"},
+  {b:"连续续费加成", v:"+10%/年递增", d:"在缴费基础分上加成，封顶 +50%"},
+];
+const BEHAVIORS = ["缴纳年度会费","参加协会活动","考取茶艺师/评茶员证书","志愿服务","推荐新会员入会","公众号投稿/内容采用","担任理事/常务理事/副会长","连续续费加成","其他（备注说明）"];
+const STARS = [
+  {n:1, tag:"一星", p:0,    y:0, sym:"初识茶"},
+  {n:2, tag:"二星", p:200,  y:1, sym:"入门"},
+  {n:3, tag:"三星", p:600,  y:2, sym:"中坚"},
+  {n:4, tag:"四星", p:1200, y:3, sym:"骨干"},
+  {n:5, tag:"五星", p:2400, y:5, sym:"荣誉"},
+];
+const YR = 365*24*3600*1000;
+
+/* ================= 存储 ================= */
+const K_M="hljtea_members", K_P="hljtea_points", K_INIT="hljtea_init";
+let members=[], points=[], editing=null, curNo=null, curCat="all";
+
+function load(){
+  members = JSON.parse(localStorage.getItem(K_M)||"[]");
+  points  = JSON.parse(localStorage.getItem(K_P)||"[]");
+  if(!localStorage.getItem(K_INIT)){
+    seed(); localStorage.setItem(K_INIT,"1");
+  }
+}
+function save(){ localStorage.setItem(K_M,JSON.stringify(members)); localStorage.setItem(K_P,JSON.stringify(points)); }
+function seed(){
+  members=[
+    {no:"GR-0001",name:"张三",cat:"普通个人会员",cert:"2301**********1234",contact:"张三",role:"会员",phone:"13900000000",email:"zhangsan@example.com",addr:"哈尔滨市南岗区××街××号",join:"2026-09-27",year:"2027",fee:300,pay:"已缴",ref:"李四",note:"示例数据"},
+    {no:"DW-0018",name:"哈尔滨××茶业有限公司",cat:"副会长单位",cert:"91230100MA×××××××",contact:"李四",role:"总经理",phone:"16600001111",email:"lisi@example.com",addr:"哈尔滨市道里区××路××号",join:"2026-09-27",year:"2027",fee:6000,pay:"已缴",ref:"—",note:"示例数据；副会长单位含负责人个人会籍"},
+    {no:"DW-0031",name:"齐齐哈尔××茶行",cat:"理事单位",cert:"91230200MA×××××××",contact:"王五",role:"店长",phone:"13200002222",email:"wangwu@example.com",addr:"齐齐哈尔市建华区××街××号",join:"2026-10-08",year:"2027",fee:2000,pay:"未缴",ref:"张三",note:"示例数据"},
+  ];
+  points=[
+    {date:"2026-09-27",no:"GR-0001",beh:"缴纳年度会费",val:300,op:"王实继",vou:"PZ-2026-0012",note:"2027 年度会费"},
+    {date:"2026-09-27",no:"DW-0018",beh:"缴纳年度会费",val:300,op:"王实继",vou:"PZ-2026-0013",note:"2027 年度会费"},
+    {date:"2026-09-27",no:"DW-0018",beh:"担任理事/常务理事/副会长",val:400,op:"王实继",vou:"RZ-2026-0004",note:"副会长任职年度积分"},
+    {date:"2026-12-20",no:"GR-0001",beh:"参加协会活动",val:10,op:"沙琳",vou:"QD-2026-1208",note:"迎新茶会"},
+  ];
+  save();
+}
+
+/* ================= 工具 ================= */
+const $=id=>document.getElementById(id);
+function toast(m){const t=$("toast");t.textContent=m;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),1600);}
+function esc(s){return (s==null?"":String(s)).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function totalPts(no){return points.filter(p=>p.no===no).reduce((s,p)=>s+(+p.val||0),0);}
+function yearsSince(d){ if(!d) return 0; return Math.max(0,Math.floor((Date.now()-new Date(d+"T00:00:00"))/YR)); }
+function calcStar(no){
+  const m=members.find(x=>x.no===no); if(!m) return STARS[0];
+  const p=totalPts(no), y=yearsSince(m.join);
+  let cur=STARS[0];
+  for(const s of STARS) if(p>=s.p && y>=s.y) cur=s;
+  return cur;
+}
+function nextStar(n){return STARS.find(s=>s.n===n+1)||null;}
+function memberName(no){const m=members.find(x=>x.no===no);return m?m.name:no;}
+function genNo(cat){
+  const pre = cat.includes("单位")||cat.includes("理事")||cat.includes("副会长")||cat.includes("常务理事") ? "DW":"GR";
+  let max=0;
+  members.forEach(m=>{ if((m.no||"").startsWith(pre+"-")){const v=+m.no.slice(3); if(v>max)max=v;} });
+  return pre+"-"+String(max+1).padStart(4,"0");
+}
+
+/* ================= 渲染 ================= */
+function renderAll(){renderStats();renderMembers();renderLedger();renderRecent();fillMemberSelect();}
+
+function renderStats(){
+  $("stMembers").textContent=members.length;
+  $("stPoints").textContent=points.length;
+  $("stPaid").textContent=members.filter(m=>m.pay==="已缴").length;
+}
+
+function renderMembers(){
+  const q=($("q").value||"").trim().toLowerCase();
+  const list=members.filter(m=>{
+    if(curCat!=="all" && m.cat!==curCat) return false;
+    if(!q) return true;
+    return [m.name,m.no,m.contact,m.phone].some(v=>(v||"").toLowerCase().includes(q));
+  });
+  const box=$("memberList");
+  if(!list.length){box.innerHTML='<div class="empty">暂无会员，点下方按钮登记</div>';return;}
+  box.innerHTML=list.map(m=>{
+    const s=calcStar(m.no), p=totalPts(m.no);
+    const stars="★".repeat(s.n)+"☆".repeat(5-s.n);
+    return `<div class="mcard" onclick="showDetail('${m.no}')">
+      <div class="avatar">${esc((m.name||"?").slice(0,1))}</div>
+      <div class="mmain">
+        <div class="mname">${esc(m.name)}</div>
+        <div class="mmeta">${esc(m.no)} · ${esc(m.cat)}</div>
+        <div class="mmeta" style="color:var(--gold)">${stars} <span class="star-tag">${s.tag}</span></div>
+      </div>
+      <div class="mright"><div class="pts">${p}<small> 分</small></div>
+      <div class="mmeta">${esc(m.pay||"")}</div></div>
+    </div>`;
+  }).join("");
+}
+
+function renderCatFilters(){
+  const all=["all",...CATS];
+  $("catFilters").innerHTML=all.map(c=>
+    `<button class="fbtn ${c===curCat?"on":""}" onclick="setCat('${c}')">${c==="all"?"全部":c}</button>`).join("");
+}
+function setCat(c){curCat=c;renderCatFilters();renderMembers();}
+
+function renderLedger(){
+  const q=($("qLedger").value||"").trim().toLowerCase();
+  const list=[...points].reverse().filter(p=>{
+    if(!q) return true;
+    return [p.no,p.beh,p.vou,p.note,memberName(p.no)].some(v=>(v||"").toLowerCase().includes(q));
+  });
+  const box=$("ledgerList");
+  if(!list.length){box.innerHTML='<div class="empty">暂无积分记录</div>';return;}
+  box.innerHTML=list.map((p,i)=>{
+    const idx=points.indexOf(p);
+    return `<div class="lrow">
+      <div class="ldate">${esc(p.date)}</div>
+      <div class="lmain"><div class="lbeh">${esc(p.beh)}</div>
+        <div class="lwho">${esc(memberName(p.no))} · ${esc(p.op||"")} ${p.vou?("· "+esc(p.vou)):""} ${p.note?("· "+esc(p.note)):""}</div></div>
+      <div class="lval ${p.val<0?"neg":""}">${p.val>0?"+":""}${p.val} 分</div>
+      <button class="del-x" onclick="delPoint(${idx})">✕</button>
+    </div>`;
+  }).join("");
+}
+
+function renderRecent(){
+  const list=[...points].reverse().slice(0,5);
+  const box=$("recentList");
+  if(!list.length){box.innerHTML='<div class="empty">还没有积分记录</div>';return;}
+  box.innerHTML=list.map(p=>`<div class="lrow">
+    <div class="ldate">${esc(p.date)}</div>
+    <div class="lmain"><div class="lbeh">${esc(p.beh)}</div>
+      <div class="lwho">${esc(memberName(p.no))} ${p.note?("· "+esc(p.note)):""}</div></div>
+    <div class="lval ${p.val<0?"neg":""}">${p.val>0?"+":""}${p.val} 分</div>
+  </div>`).join("");
+}
+
+function renderRules(){
+  $("ruleList").innerHTML=RULES.map(r=>`<div class="rule">
+    <div class="rname"><div>${esc(r.b)}</div><div class="rdesc">${esc(r.d)}</div></div>
+    <div class="rval">${esc(r.v)}</div></div>`).join("");
+  $("starList").innerHTML=STARS.map(s=>{
+    const stars="★".repeat(s.n);
+    const req = s.n===1 ? "入会即得" : `${s.p} 分 + 会龄满 ${s.y} 年`;
+    return `<div class="starrow"><div class="stars-ic">${stars}</div>
+      <div class="rname"><div>${s.tag}会员 · ${s.sym}</div><div class="sreq">${req}</div></div></div>`;
+  }).join("");
+  $("feeList").innerHTML=CATS.map(c=>`<div class="rule">
+    <div class="rname">${esc(c)}</div><div class="rval">${FEE[c].toLocaleString()} 元/年</div></div>`).join("");
+}
+
+function fillMemberSelect(){
+  $("fMember").innerHTML=members.map(m=>
+    `<option value="${m.no}">${esc(m.name)}（${m.no}）</option>`).join("")||"<option value=''>请先登记会员</option>";
+}
+function onBehChange(){
+  const b=$("fBeh").value, no=$("fMember").value;
+  const m=members.find(x=>x.no===no);
+  let v=0, hint="";
+  if(b==="缴纳年度会费") {v=300; hint="缴费基础分 300 分/年，荣誉会员视同已缴；连续续费加成另计。";}
+  else if(b==="参加协会活动"){v=10; hint="10 分/场，年度封顶 100 分。";}
+  else if(b==="考取茶艺师/评茶员证书"){v=100; hint="+100 分/证，逐级累加。";}
+  else if(b==="志愿服务"){v=20; hint="20 分/次。";}
+  else if(b==="推荐新会员入会"){v=30; hint="30 分/人，入会成功后计入。";}
+  else if(b==="公众号投稿/内容采用"){v=20; hint="20 分/篇，年度封顶 100 分。";}
+  else if(b==="担任理事/常务理事/副会长"){v=m?OFFICE_SCORE[m.cat]||0:200; hint="按单位档位：理事 200 / 常务理事 300 / 副会长 400 分/年。";}
+  else if(b==="连续续费加成"){v=30; hint="缴费基础分的 +10%/年，封顶 +50%，请按实际填写。";}
+  else {v=0; hint="请在积分值中手工填写，并在备注说明。";}
+  $("fVal").value=v; $("behHint").textContent=hint;
+}
+
+/* ================= 记积分 ================= */
+function savePoint(){
+  const no=$("fMember").value, beh=$("fBeh").value, date=$("fDate").value;
+  if(!no){toast("请先登记会员");return;}
+  if(!beh){toast("请选择积分行为");return;}
+  if(!date){toast("请选择日期");return;}
+  const val=+$("fVal").value||0;
+  points.push({date,no,beh,val,op:$("fOp").value.trim(),vou:$("fVou").value.trim(),note:$("fNote").value.trim()});
+  save(); renderAll();
+  const m=members.find(x=>x.no===no), s=calcStar(no);
+  toast(`已保存：${m?m.name:""} 当前 ${totalPts(no)} 分 · ${s.tag}会员`);
+  $("fNote").value=""; $("fVou").value="";
+}
+
+/* ================= 会员表单 ================= */
+function openMemberForm(){
+  editing=null; $("mfTitle").textContent="登记新会员";
+  ["mName","mNo","mCert","mContact","mRole","mPhone","mEmail","mAddr","mRef","mNote"].forEach(i=>$(i).value="");
+  $("mCat").value="普通个人会员"; $("mYear").value="2027";
+  $("mJoin").value=new Date().toISOString().slice(0,10);
+  onCatChange(); show("mkMember");
+}
+function onCatChange(){ $("mFee").value=FEE[$("mCat").value]||0; }
+function saveMember(){
+  const name=$("mName").value.trim();
+  if(!name){toast("请填写姓名/单位名称");return;}
+  let no=$("mNo").value.trim()||genNo($("mCat").value);
+  if(!editing && members.some(m=>m.no===no)){toast("会员编号已存在");return;}
+  const obj={no,name,cat:$("mCat").value,cert:$("mCert").value.trim(),contact:$("mContact").value.trim(),
+    role:$("mRole").value.trim(),phone:$("mPhone").value.trim(),email:$("mEmail").value.trim(),
+    addr:$("mAddr").value.trim(),join:$("mJoin").value,year:$("mYear").value.trim(),
+    fee:+$("mFee").value||0,pay:$("mPay").value,ref:$("mRef").value.trim(),note:$("mNote").value.trim()};
+  if(editing){Object.assign(editing,obj);} else {members.push(obj);}
+  save(); hide("mkMember"); renderAll();
+  toast(editing?"已更新":"已登记："+name);
+}
+
+/* ================= 详情 ================= */
+function showDetail(no){
+  curNo=no; const m=members.find(x=>x.no===no); if(!m)return;
+  const s=calcStar(no), p=totalPts(no), ns=nextStar(s.n);
+  $("dTitle").textContent=m.name;
+  $("dStars").innerHTML=`<span style="color:var(--gold);font-size:18px">${"★".repeat(s.n)}${"☆".repeat(5-s.n)}</span>
+    <div style="font-size:12px;color:var(--grey)">${s.tag}会员 · ${s.sym} · 累计 ${p} 分 · 会龄 ${yearsSince(m.join)} 年</div>`;
+  if(ns){
+    const rp=Math.max(0,ns.p-p), ry=Math.max(0,ns.y-yearsSince(m.join));
+    const prog = ns.p>0 ? Math.min(100,Math.round(p/ns.p*100)) : 100;
+    $("dProg").style.width=prog+"%";
+    let need=[];
+    if(rp>0) need.push(`还差 ${rp} 分`); else need.push("积分已达标");
+    if(ry>0) need.push(`会龄还差 ${ry} 年`);
+    $("dProgNote").textContent=`距${ns.tag}会员：${need.join("，")}（门槛 ${ns.p} 分 + 满 ${ns.y} 年）`;
+  } else {
+    $("dProg").style.width="100%";
+    $("dProgNote").textContent="已达最高星级五星会员";
+  }
+  const info=[["会员编号",m.no],["会员类别",m.cat],["会费标准",m.fee+" 元/年"],["缴费状态",m.pay],
+    ["证件号码",m.cert],["联系人",m.contact+" "+(m.role||"")],["电话",m.phone],["邮箱",m.email],
+    ["地址",m.addr],["入会日期",m.join],["会籍年度",m.year],["推荐人",m.ref],["备注",m.note]];
+  $("dInfo").innerHTML=info.filter(x=>x[1]).map(x=>`<dt>${x[0]}</dt><dd>${esc(x[1])}</dd>`).join("");
+  const hist=points.filter(x=>x.no===no).reverse();
+  $("dLedger").innerHTML=hist.length?hist.map(x=>`<div class="lrow">
+      <div class="ldate">${esc(x.date)}</div>
+      <div class="lmain"><div class="lbeh">${esc(x.beh)}</div><div class="lwho">${esc(x.note||"")}</div></div>
+      <div class="lval ${x.val<0?"neg":""}">${x.val>0?"+":""}${x.val}</div></div>`).join("")
+    :'<div class="empty">暂无积分记录</div>';
+  show("mkDetail");
+}
+function editMember(){
+  editing=members.find(x=>x.no===curNo); if(!editing)return;
+  hide("mkDetail"); $("mfTitle").textContent="编辑会员";
+  $("mName").value=editing.name; $("mCat").value=editing.cat; $("mNo").value=editing.no;
+  $("mCert").value=editing.cert; $("mContact").value=editing.contact; $("mRole").value=editing.role;
+  $("mPhone").value=editing.phone; $("mEmail").value=editing.email; $("mAddr").value=editing.addr;
+  $("mJoin").value=editing.join; $("mYear").value=editing.year; $("mFee").value=editing.fee;
+  $("mPay").value=editing.pay; $("mRef").value=editing.ref; $("mNote").value=editing.note;
+  show("mkMember");
+}
+function delMember(){
+  const m=members.find(x=>x.no===curNo); if(!m)return;
+  if(!confirm(`确认删除「${m.name}」？其积分记录将保留在台账中。`))return;
+  members=members.filter(x=>x.no!==curNo);
+  save(); hide("mkDetail"); renderAll(); toast("已删除");
+}
+function delPoint(i){
+  const p=points[i];
+  if(confirm(`删除 ${p.date}「${p.beh}」${p.val} 分？`)){
+    points.splice(i,1); save(); renderAll(); if(curNo)showDetail(curNo); toast("已删除");
+  }
+}
+
+/* ================= 数据导入导出 ================= */
+function dl(name, text, mime){
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([text],{type:mime}));
+  a.download=name; a.click(); URL.revokeObjectURL(a.href);
+}
+function exportJSON(){
+  dl(`龙江茶协会员数据备份_${new Date().toISOString().slice(0,10)}.json`,
+    JSON.stringify({members,points},null,2),"application/json");
+  toast("备份已导出");
+}
+function exportCSV(which){
+  let head,rows;
+  if(which==="members"){
+    head=["序号","会员编号","姓名/单位名称","会员类别","证件号","联系人","职务","电话","邮箱","地址","入会日期","会籍年度","会费标准(元/年)","缴费状态","累计积分","当前星级","推荐人","备注"];
+    rows=members.map((m,i)=>[i+1,m.no,m.name,m.cat,m.cert,m.contact,m.role,m.phone,m.email,m.addr,m.join,m.year,m.fee,m.pay,totalPts(m.no),calcStar(m.no).tag+"会员",m.ref,m.note]);
+  }else{
+    head=["日期","会员编号","姓名/单位名称","积分行为","积分值","经办人","凭证编号","备注"];
+    rows=points.map(p=>[p.date,p.no,memberName(p.no),p.beh,p.val,p.op,p.vou,p.note]);
+  }
+  const csv="\uFEFF"+[head,...rows].map(r=>r.map(v=>`"${(v==null?"":String(v)).replace(/"/g,'""')}"`).join(",")).join("\r\n");
+  dl(`龙江茶协_${which==="members"?"会员基本信息":"积分台账"}_${new Date().toISOString().slice(0,10)}.csv`,csv,"text/csv");
+  toast("CSV 已导出");
+}
+function importJSON(){
+  const f=$("impFile").files[0];
+  if(!f){toast("请先选择备份文件");return;}
+  const rd=new FileReader();
+  rd.onload=e=>{
+    try{
+      const d=JSON.parse(e.target.result);
+      if(!Array.isArray(d.members)||!Array.isArray(d.points)) throw 0;
+      members=d.members; points=d.points; save(); renderAll(); toast("导入成功");
+    }catch(_){toast("文件格式不正确");}
+  };
+  rd.readAsText(f);
+}
+function clearSample(){
+  members=members.filter(m=>!(m.note||"").includes("示例数据"));
+  const nos=new Set(members.map(m=>m.no));
+  points=points.filter(p=>nos.has(p.no));
+  save(); renderAll(); toast("示例数据已清除");
+}
+function wipeAll(){
+  if(!confirm("确认清空全部会员与积分数据？此操作不可恢复，建议先导出备份。"))return;
+  if(!confirm("再次确认：真的要清空吗？"))return;
+  members=[];points=[];save();renderAll();toast("已清空");
+}
+
+/* ================= 导航 ================= */
+function go(id,btn){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("on"));
+  document.querySelectorAll("nav button").forEach(b=>b.classList.remove("on"));
+  $(id).classList.add("on"); btn.classList.add("on");
+  window.scrollTo(0,0);
+}
+function show(id){$(id).classList.add("on");}
+function hide(id){$(id).classList.remove("on");}
+document.querySelectorAll(".mask").forEach(m=>m.addEventListener("click",e=>{if(e.target===m)m.classList.remove("on");}));
+$("q").addEventListener("input",renderMembers);
+$("qLedger").addEventListener("input",renderLedger);
+
+/* ================= 启动 ================= */
+load();
+$("fBeh").innerHTML=BEHAVIORS.map(b=>`<option>${b}</option>`).join("");
+$("fDate").value=new Date().toISOString().slice(0,10);
+renderCatFilters(); renderRules(); renderAll(); onBehChange();
+</script>
+</body>
+</html>
