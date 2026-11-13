@@ -1,0 +1,22 @@
+{
+  "name": "龙江茶协 · 会员信息与积分登记",
+  "short_name": "会员积分登记",
+  "description": "黑龙江省茶业协会会员信息登记与积分管理（单机离线可用）",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FAF7F1",
+  "theme_color": "#8C1F28",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
